@@ -1,264 +1,71 @@
-# 📦 Project Setup
+# IS601 Module 11 – Calculator API
 
----
+## Running the Tests
 
-# 🧩 1. Install Homebrew (Mac Only)
+This project has three test layers. All commands assume you are inside the
+`module11_is601/` directory with the virtual environment activated.
 
-> Skip this step if you're on Windows.
-
-Homebrew is a package manager for macOS.  
-You’ll use it to easily install Git, Python, Docker, etc.
-
-**Install Homebrew:**
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-**Verify Homebrew:**
-
-```bash
-brew --version
-```
-
-If you see a version number, you're good to go.
-
----
-
-# 🧩 2. Install and Configure Git
-
-## Install Git
-
-- **MacOS (using Homebrew)**
-
-```bash
-brew install git
-```
-
-- **Windows**
-
-Download and install [Git for Windows](https://git-scm.com/download/win).  
-Accept the default options during installation.
-
-**Verify Git:**
-
-```bash
-git --version
-```
-
----
-
-## Configure Git Globals
-
-Set your name and email so Git tracks your commits properly:
-
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your_email@example.com"
-```
-
-Confirm the settings:
-
-```bash
-git config --list
-```
-
----
-
-## Generate SSH Keys and Connect to GitHub
-
-> Only do this once per machine.
-
-1. Generate a new SSH key:
-
-```bash
-ssh-keygen -t ed25519 -C "your_email@example.com"
-```
-
-(Press Enter at all prompts.)
-
-2. Start the SSH agent:
-
-```bash
-eval "$(ssh-agent -s)"
-```
-
-3. Add the SSH private key to the agent:
-
-```bash
-ssh-add ~/.ssh/id_ed25519
-```
-
-4. Copy your SSH public key:
-
-- **Mac/Linux:**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | pbcopy
-```
-
-- **Windows (Git Bash):**
-
-```bash
-cat ~/.ssh/id_ed25519.pub | clip
-```
-
-5. Add the key to your GitHub account:
-   - Go to [GitHub SSH Settings](https://github.com/settings/keys)
-   - Click **New SSH Key**, paste the key, save.
-
-6. Test the connection:
-
-```bash
-ssh -T git@github.com
-```
-
-You should see a success message.
-
----
-
-# 🧩 3. Clone the Repository
-
-Now you can safely clone the course project:
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
----
-
-# 🛠️ 4. Install Python 3.10+
-
-## Install Python
-
-- **MacOS (Homebrew)**
-
-```bash
-brew install python
-```
-
-- **Windows**
-
-Download and install [Python for Windows](https://www.python.org/downloads/).  
-✅ Make sure you **check the box** `Add Python to PATH` during setup.
-
-**Verify Python:**
-
-```bash
-python3 --version
-```
-or
-```bash
-python --version
-```
-
----
-
-## Create and Activate a Virtual Environment
-
-(Optional but recommended)
-
-```bash
-python3 -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate.bat  # Windows
-```
-
-### Install Required Packages
+### Prerequisites
 
 ```bash
 pip install -r requirements.txt
+playwright install chromium
 ```
 
----
+### Unit tests (no database needed)
 
-# 🐳 5. (Optional) Docker Setup
-
-> Skip if Docker isn't used in this module.
-
-## Install Docker
-
-- [Install Docker Desktop for Mac](https://www.docker.com/products/docker-desktop/)
-- [Install Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-
-## Build Docker Image
+Tests the pure arithmetic operations in `app/operations/`.
 
 ```bash
-docker build -t <image-name> .
+pytest tests/unit/ -v
 ```
 
-## Run Docker Container
+### Integration tests – schema & model logic (no database needed)
+
+Tests Pydantic schema validation and SQLAlchemy model/factory logic without a
+live database connection.
 
 ```bash
-docker run -it --rm <image-name>
+pytest tests/integration/test_calculation.py tests/integration/test_calculation_schema.py -v
 ```
 
----
+### Integration tests – database (PostgreSQL required)
 
-# 🚀 6. Running the Project
-
-- **Without Docker**:
+Tests that actually insert, query, and validate data in PostgreSQL. Start the
+database first:
 
 ```bash
-python main.py
+# Option A – Docker Compose (recommended)
+docker compose up -d db
+
+# Option B – set DATABASE_URL to point at an existing instance
+export DATABASE_URL=postgresql://user:password@localhost:5432/myappdb
 ```
 
-(or update this if the main script is different.)
-
-- **With Docker**:
+Then run:
 
 ```bash
-docker run -it --rm <image-name>
+pytest tests/integration/test_db_calculation.py -v
 ```
 
----
-
-# 📝 7. Submission Instructions
-
-After finishing your work:
+### All tests (unit + integration + e2e)
 
 ```bash
-git add .
-git commit -m "Complete Module X"
-git push origin main
+pytest -v
 ```
 
-Then submit the GitHub repository link as instructed.
+E2E tests launch a headless Chromium browser via Playwright; make sure
+`playwright install chromium` has been run first.
 
----
+### Running with coverage
 
-# 🔥 Useful Commands Cheat Sheet
+```bash
+pytest tests/unit/ tests/integration/ --cov=app --cov-report=term-missing
+```
 
-| Action                         | Command                                          |
-| ------------------------------- | ------------------------------------------------ |
-| Install Homebrew (Mac)          | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
-| Install Git                     | `brew install git` or Git for Windows installer |
-| Configure Git Global Username  | `git config --global user.name "Your Name"`      |
-| Configure Git Global Email     | `git config --global user.email "you@example.com"` |
-| Clone Repository                | `git clone <repo-url>`                          |
-| Create Virtual Environment     | `python3 -m venv venv`                           |
-| Activate Virtual Environment   | `source venv/bin/activate` / `venv\Scripts\activate.bat` |
-| Install Python Packages        | `pip install -r requirements.txt`               |
-| Build Docker Image              | `docker build -t <image-name> .`                |
-| Run Docker Container            | `docker run -it --rm <image-name>`               |
-| Push Code to GitHub             | `git add . && git commit -m "message" && git push` |
+### CI/CD
 
----
-
-# 📋 Notes
-
-- Install **Homebrew** first on Mac.
-- Install and configure **Git** and **SSH** before cloning.
-- Use **Python 3.10+** and **virtual environments** for Python projects.
-- **Docker** is optional depending on the project.
-
----
-
-# 📎 Quick Links
-
-- [Homebrew](https://brew.sh/)
-- [Git Downloads](https://git-scm.com/downloads)
-- [Python Downloads](https://www.python.org/downloads/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [GitHub SSH Setup Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+GitHub Actions runs all three test layers automatically on every push or pull
+request to `main`. A PostgreSQL 15 service container is provided for the
+database integration tests. On a successful run on `main`, the Docker image is
+built and pushed to Docker Hub as `docsnoop/601_module11:latest`.
